@@ -6,6 +6,17 @@ int calcFuel(int mass) {
 	return mass / 3 - 2;
 }
 
+int calcFuelPart2(int mass) {
+	// For part 2
+	int temp = mass / 3 - 2;
+	if(temp <= 0) {
+		return 0;
+	}
+	else {
+		return temp + calcFuelPart2(temp);	
+	}
+}
+
 int main() {
  	printf("%s\n", "Day 1");
 
@@ -50,7 +61,13 @@ int main() {
     	total += calcFuel(nums[i]);
     }
 
-    printf("%d\n", total);
+    printf("Part 1: %d\n", total);
+
+    long part2Total = 0;
+    for(i = 0; i < index; i++) {
+    	part2Total += calcFuelPart2(nums[i]);
+    }
+    printf("Part 2: %ld\n", part2Total);
 
 	return 0;
 }
