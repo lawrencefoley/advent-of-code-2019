@@ -20,7 +20,7 @@ int calcFuelPart2(int mass) {
 int main() {
 	printf("%s\n", "Day 1");
 
-	char inputFileName [] = "input.txt";
+	char * inputFileName = "input.txt";
 	FILE * inputStream;
 	inputStream = fopen(inputFileName, "r");
 
@@ -61,7 +61,7 @@ int main() {
 		total += calcFuel(nums[i]);
 	}
 
-	printf("Part 1: %d\n", total);
+	printf("Part 1: %ld\n", total);
 
 	long part2Total = 0;
 	for (i = 0; i < index; i++) {
