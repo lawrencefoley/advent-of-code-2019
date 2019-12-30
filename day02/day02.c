@@ -96,6 +96,9 @@ int main() {
 		printf("%d: %d\n", i, currentNum);
 	}
 
+    vGet(&v, 0, &currentNum);
+	printf("Answer: %d\n", currentNum);
+
 	// Free memory
 	vFinalize(&v);
 	exit(0);
