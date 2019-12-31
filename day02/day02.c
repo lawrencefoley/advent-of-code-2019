@@ -3,6 +3,42 @@
 #include <string.h>
 #include "vector.h"
 
+void runProgram(Vector *program) {
+    // Run the Intcode program
+    int opcode = 0;
+    int index1 = 0;
+    int index2 = 0;
+    int index3 = 0;
+    int arg1 = 0;
+    int arg2 = 0;
+    int result = 0;
+    int i;
+    for(i = 0; i < program->size; i+=4) {
+        vGet(program, i, &opcode);
+        vGet(program, i + 1, &index1);
+        vGet(program, i + 2, &index2);
+        vGet(program, i + 3, &index3);
+
+        vGet(program, index1, &arg1);
+        vGet(program, index2, &arg2);
+
+        if(opcode == 99) {
+            // End program
+            return;
+        }
+        else if(opcode == 1) {
+            result = arg1 + arg2;
+        }
+        else if(opcode == 2) {
+            result = arg1 * arg2;
+        }
+        else {
+            printf("Error: Unknown opcode=%d\n", opcode);
+        }
+
+        vSet(program, index3, result);
+    }
+}
 
 int main() {
 	printf("Day 2\n");
@@ -25,8 +61,7 @@ int main() {
 	// Read the file to a string
 	while (fscanf(inputStream, "%s", &fileString) != EOF)
 	{
-		printf("Reading data:");
-		printf("%s\n", fileString);
+		printf("Reading file\n");
 	}
 	// Close the file
 	fclose(inputStream);
@@ -50,56 +85,45 @@ int main() {
 
 	int i;
 	currentNum = 0;
-	for (i = 0; i < v.size; i++) {
-		vGet(&v, i, &currentNum);
-		printf("%d: %d\n", i, currentNum);
-	}
 
-    // Run the Intcode program
-    int opcode = 0;
-    int index1 = 0;
-    int index2 = 0;
-    int index3 = 0;
-    int arg1 = 0;
-    int arg2 = 0;
-    int result = 0;
-    for(i = 0; i < v.size; i+=4) {
-        vGet(&v, i, &opcode);
-        vGet(&v, i + 1, &index1);
-        vGet(&v, i + 2, &index2);
-        vGet(&v, i + 3, &index3);
+	// Make a copy so we have the original for part 2
+	Vector tempVector;
+	vInitialize(&tempVector);
+	tempVector.size = v.size;
+    tempVector.capacity = v.capacity;
+    tempVector._array = calloc(tempVector.capacity, sizeof(int));
+	memcpy(tempVector._array, v._array, v.capacity * sizeof(int));
 
-        vGet(&v, index1, &arg1);
-        vGet(&v, index2, &arg2);
+    runProgram(&tempVector);
 
-        if(opcode == 99) {
-            printf("opcode 99, exiting\n");
-            break;
-        }
-        else if(opcode == 1) {
-            result = arg1 + arg2;
-        }
-        else if(opcode == 2) {
-            result = arg1 * arg2;
-        }
-        else {
-            printf("Error: Unknown opcode=%d\n", opcode);
-        }
+    vGet(&tempVector, 0, &currentNum);
+	printf("Part 1 Answer: %d\n", currentNum);
 
-        printf("result=%d\n", result);
-        vSet(&v, index3, result);
+	// Part 2
+	int part2expected = 19690720;
+	int tempVal = 0;
+	int j;
+    for(i = 0; i <= 99; i++) {
+        for(j = 0; j <= 99; j++) {
+            // Overwrite the program with the original
+            memcpy(tempVector._array, v._array, v.capacity * sizeof(int));
+            vSet(&tempVector, 1, i);
+            vSet(&tempVector, 2, j);
+            runProgram(&tempVector);
+            vGet(&tempVector, 0, &tempVal);
+            if(tempVal == part2expected) {
+                printf("Found! arg1=%d arg2=%d\n", i, j);
+                printf("Part 2 Answer: %d\n", (i * 100 + j));
+
+                // Break out of loops
+                i = 100;
+                break;
+            }
+        }
     }
-
-
-    for (i = 0; i < v.size; i++) {
-		vGet(&v, i, &currentNum);
-		printf("%d: %d\n", i, currentNum);
-	}
-
-    vGet(&v, 0, &currentNum);
-	printf("Answer: %d\n", currentNum);
 
 	// Free memory
 	vFinalize(&v);
+	vFinalize(&tempVector);
 	exit(0);
 }
