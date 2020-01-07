@@ -1,0 +1,129 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "vector.h"
+
+void runProgram(Vector *program) {
+    // Run the Intcode program
+    int opcode = 0;
+    int index1 = 0;
+    int index2 = 0;
+    int index3 = 0;
+    int arg1 = 0;
+    int arg2 = 0;
+    int result = 0;
+    int i;
+    for(i = 0; i < program->size; i+=4) {
+        vGet(program, i, &opcode);
+        vGet(program, i + 1, &index1);
+        vGet(program, i + 2, &index2);
+        vGet(program, i + 3, &index3);
+
+        vGet(program, index1, &arg1);
+        vGet(program, index2, &arg2);
+
+        if(opcode == 99) {
+            // en
+            break;
+        }
+        else if(opcode == 1) {
+            result = arg1 + arg2;
+        }
+        else if(opcode == 2) {
+            result = arg1 * arg2;
+        }
+        else {
+            printf("Error: Unknown opcode=%d\n", opcode);
+        }
+
+        vSet(program, index3, result);
+    }
+}
+
+int main() {
+	printf("Day 2\n");
+
+	char * inputFileName = "input.txt";
+	FILE * inputStream;
+	inputStream = fopen(inputFileName, "r");
+
+	// Check if file has been opened
+	if (!inputStream)
+	{
+		printf("Can't open file %s", inputFileName);
+		exit(1);
+	}
+
+	int * programData;
+	programData = malloc(sizeof(int) * 10);
+	char fileString[1024];
+
+	// Read the file to a string
+	while (fscanf(inputStream, "%s", &fileString) != EOF)
+	{
+		printf("Reading file\n");
+	}
+	// Close the file
+	fclose(inputStream);
+
+	Vector v;
+	vInitialize(&v);
+
+	// Split the string on commas
+	char * token = strtok(fileString, ",");
+	int currentNum = 0;
+	while( token != NULL )
+	{
+		if(sscanf(token, "%d", &currentNum) != 1) {
+			printf("Error converting number: %s\n", token);
+			exit(2);
+		}
+		vPushBack(&v, currentNum);
+		// Pass null to go to next token
+		token = strtok(NULL, ",");
+	}
+
+	int i;
+	currentNum = 0;
+
+	// Make a copy so we have the original for part 2
+	Vector tempVector;
+	vInitialize(&tempVector);
+	tempVector.size = v.size;
+    tempVector.capacity = v.capacity;
+    tempVector._array = calloc(tempVector.capacity, sizeof(int));
+	memcpy(tempVector._array, v._array, v.capacity * sizeof(int));
+
+    runProgram(&tempVector);
+
+    vGet(&tempVector, 0, &currentNum);
+	printf("Part 1 Answer: %d\n", currentNum);
+
+	// Part 2
+	int part2expected = 19690720;
+	int tempVal = 0;
+	int j;
+    for(i = 0; i <= 99; i++) {
+        for(j = 0; j <= 99; j++) {
+            // Overwrite the program with the original
+            memcpy(tempVector._array, v._array, v.capacity * sizeof(int));
+            vSet(&tempVector, 1, i);
+            vSet(&tempVector, 2, j);
+            runProgram(&tempVector);
+            vGet(&tempVector, 0, &tempVal);
+            if(tempVal == part2expected) {
+                printf("Found! arg1=%d arg2=%d\n", i, j);
+                printf("Part 2 Answer: %d\n", (i * 100 + j));
+
+                // Break out of loops
+                i = 100;
+                break;
+            }
+        }
+    }
+
+	// Free memory
+	vFinalize(&tempVector);
+	vFinalize(&tempVector);
+	exit(0);
+}
