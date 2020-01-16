@@ -31,6 +31,14 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Unit filename="arraylist.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="arraylist.h" />
+		<Unit filename="day03.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="input.txt" />
 		<Extensions>
 			<code_completion />
 			<envvars />

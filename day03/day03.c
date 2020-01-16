@@ -6,7 +6,6 @@
 int main() {
     printf("Day 3\n");
 
-
 	char * inputFileName = "input.txt";
 	FILE * inputStream;
 	inputStream = fopen(inputFileName, "r");
@@ -18,50 +17,58 @@ int main() {
 		exit(1);
 	}
 
-	int * programData;
-	programData = malloc(sizeof(int) * 10);
 	char fileString[1024000];
-
-	char inputStrings[100][4];
+    // Allocate memory for an array of char pointer pointers
+	int numArrays = 2;
+	int currentArraySize = 100;
+	int defaultStringLength = 5;
+	char ***inputData = malloc(numArrays * sizeof(char **));
 	int index = 0;
-
-    ArrayList *arrayList = arraylist_new(10);
-
+	int currentStringIndex = 0;
 	// Read each line of file
 	while (fscanf(inputStream, "%s", fileString) != EOF)
 	{
+		if(index >= numArrays) {
+			printf("We need to realloc memory for more arrays");
+			exit(1);
+		}
+		inputData[index] = calloc(currentArraySize, sizeof(char*));
         // Split the line on commas
-        char * token = strtok(fileString, ",");
-        char * currentString;
+        char* token = strtok(fileString, ",");
+		char* currentString;
         while(token != NULL)
         {
-//            char *temp = "    ";
-//            strcpy(&temp, token);
-// TODO This isn't working
-            arraylist_append(arrayList, *token);
-            index++;
-            // Pass null to go to next token
-            token = strtok(NULL, ",");
+			if(currentStringIndex >= currentArraySize) {
+				currentArraySize *= 2;
+				inputData[index] = (char**)realloc(inputData[index], currentArraySize * sizeof(char*));
+			}
+			// Allocate memory for the current string
+			inputData[index][currentStringIndex] = calloc(defaultStringLength, sizeof(char));
+			// Copy the string int the new memory
+			strcpy(inputData[index][currentStringIndex], token);
+            
+            // Pass null to go to next token in the file string
+            token = strtok(NULL, ",");	
+			currentStringIndex++;
         }
+		currentStringIndex = 0;
+		index++;
 	}
 	// Close the file
 	fclose(inputStream);
 
-
-
-	// Split the string on commas
-	char * token = strtok(fileString, ",");
-	int currentNum = 0;
-	while( token != NULL )
-	{
-		if(sscanf(token, "%d", &currentNum) != 1) {
-			printf("Error converting number: %s\n", token);
-			exit(2);
-		}
-
-		// Pass null to go to next token
-		token = strtok(NULL, ",");
-	}
+	int i;
+	int j;
+	for(i = 0; i < index; i++)
+    {
+		// TODO Keep track of each array size
+        for(j = 0; j <= 300; j++) {
+            printf("Data at array[%d][%d]: \"%s\", address=%p\n", i, j, inputData[i][j], &inputData[i][j]);
+            free(inputData[i][j]);
+        }
+        free(inputData[i]);
+    }
+    free(inputData);
 
 
     exit(0);
