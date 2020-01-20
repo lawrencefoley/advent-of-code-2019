@@ -3,15 +3,13 @@
 #include <string.h>
 
 int manhattanDistance(int x1, int y1, int x2, int y2) {
-	// TODO
-	int temp = abs(x1 - x2) + abs(y1 - y2);
-	return temp;
+	return abs(x1 - x2) + abs(y1 - y2);
 }
 
 int main() {
     printf("Day 3\n");
 
-	char * inputFileName = "test1.txt";
+	char * inputFileName = "input.txt";
 	FILE * inputStream;
 	inputStream = fopen(inputFileName, "r");
 
@@ -65,21 +63,24 @@ int main() {
 	// Close the file
 	fclose(inputStream);
 
-
-	int matrixSize = 1000;
-	int ** matrix = (int**)calloc(matrixSize, sizeof(int*));
+	long memSize = 0;
+	int matrixSize = 40000;
+	int ** matrix = calloc(matrixSize, sizeof(int*));
+	memSize += matrixSize * sizeof(int*);
 	int i;
 	int j;
 	for(i = 0; i <= matrixSize; i++) {
-		matrix[i] = (int*)calloc(matrixSize, sizeof(int));
+		memSize += matrixSize * sizeof(int);
+		matrix[i] = calloc(matrixSize, sizeof(int));
+		// Check for calloc error
+		if(!(matrix[i])) {
+			printf("calloc error\n");
+			printf("i=%d\n", i);
+			printf("memSize=%d\n", memSize);
+			exit(1);
+		}
 	}
-
-	// Fill the matrix with .
-	// for(i = 0; i <= matrixSize; i++) {
-	// 	for(j = 0; j < matrixSize; j++) {
-	// 		matrix[i][j] = 0;
-	// 	}
-	// }
+	printf("Allocated %dMB\n", memSize / (1024 * 1024));
 
 	// We'll start in the middle of the matrix
 	int matrixMiddle = matrixSize / 2;
@@ -98,7 +99,8 @@ int main() {
 
 			if(directionChar == 'U') {
 				for(i = currentY; i < currentY + lineLength; i++) {
-					if(matrix[i][currentX] != 0 && manhattanDistance(matrixMiddle, matrixMiddle, currentX, i) < minDistance) {
+					if(matrix[i][currentX] != arrayIndex + 1 && matrix[i][currentX] != 0 && (i != matrixMiddle && currentX != matrixMiddle) &&
+						manhattanDistance(matrixMiddle, matrixMiddle, currentX, i) < minDistance) {
 						minDistance = manhattanDistance(matrixMiddle, matrixMiddle, currentX, i);
 					}
 					matrix[i][currentX] = arrayIndex + 1;
@@ -107,7 +109,8 @@ int main() {
 			}
 			else if (directionChar == 'R') {
 				for(i = currentX; i < currentX + lineLength; i++) {
-					if(matrix[currentY][i] != 0 && manhattanDistance(matrixMiddle, matrixMiddle, i, currentY) < minDistance) {
+					if(matrix[currentY][i] != arrayIndex + 1 && matrix[currentY][i] != 0 && (i != matrixMiddle && currentY != matrixMiddle) &&
+						manhattanDistance(matrixMiddle, matrixMiddle, i, currentY) < minDistance) {
 						minDistance = manhattanDistance(matrixMiddle, matrixMiddle, i, currentY);
 					}
 					matrix[currentY][i] = arrayIndex + 1;
@@ -116,7 +119,8 @@ int main() {
 			}
 			else if (directionChar == 'D') {
 				for(i = currentY; i > currentY - lineLength; i--) {
-					if(matrix[i][currentX] != 0 && manhattanDistance(matrixMiddle, matrixMiddle, currentX, i) < minDistance) {
+					if(matrix[i][currentX] != arrayIndex + 1 && matrix[i][currentX] != 0 && (i != matrixMiddle && currentX != matrixMiddle) &&
+						manhattanDistance(matrixMiddle, matrixMiddle, currentX, i) < minDistance) {
 						minDistance = manhattanDistance(matrixMiddle, matrixMiddle, currentX, i);
 					}
 					matrix[i][currentX] = arrayIndex + 1;
@@ -125,7 +129,8 @@ int main() {
 			}
 			else if (directionChar == 'L') {
 				for(i = currentX; i > currentX - lineLength; i--) {
-					if(matrix[currentY][i] != arrayIndex + 1 && matrix[currentY][i] != 0 && manhattanDistance(matrixMiddle, matrixMiddle, i, currentY) < minDistance) {
+					if(matrix[currentY][i] != arrayIndex + 1 && matrix[currentY][i] != 0 && (i != matrixMiddle && currentY != matrixMiddle) &&
+						manhattanDistance(matrixMiddle, matrixMiddle, i, currentY) < minDistance) {
 						minDistance = manhattanDistance(matrixMiddle, matrixMiddle, i, currentY);
 					}
 					matrix[currentY][i] = arrayIndex + 1;
@@ -137,29 +142,15 @@ int main() {
 				exit(1);
 			}
         }
+		// Set the current x, y to start a new line
+		currentX = matrixMiddle;
+		currentY = matrixMiddle;
     }
-
-
-
-
-
-
-
-	// Print matrix
-	for(i = 0; i <= matrixSize; i++) {
-		for(j = 0; j < matrixSize; j++) {
-			// printf("%d", matrix[i][j]);
-		}
-		// printf("\n");
-	}
-
-
 
 	// Free the inputData memory
 	for(i = 0; i < index; i++)
     {
         for(j = 0; j < stringArrayLengths[i]; j++) {
-            // printf("Data at array[%d][%d]: \"%s\", address=%p\n", i, j, inputData[i][j], &inputData[i][j]);
             free(inputData[i][j]);
         }
         free(inputData[i]);
